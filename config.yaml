@@ -1,0 +1,18 @@
+title: Writing NES Emulator in Rust
+theme: hugo-book
+baseURL: http://example.org
+defaultContentLanguage: en
+
+params:
+  BookSearch: false
+  BookSection: '*'
+
+languages:
+  en:
+    title: Writing NES Emulator in Rust
+    weight: 1
+    languageName: English
+  zh:
+    title: 使用 Rust 编写一个 NES 模拟器
+    weight: 2
+    languageName: 中文（简体）
