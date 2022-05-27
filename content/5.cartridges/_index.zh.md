@@ -6,56 +6,55 @@ weight: 5
 
 ![image_1_a_cartridge.png](image_1_a_cartridge.png)
 
-The first version of the cartridges was relatively simple. They carried two banks of ROM memory: PRG ROM for code and CHR ROM for visual graphics.
+第一版的卡带相对简单。它们带有两组 ROM 存储器：用于代码的 PRG ROM 和用于可视图形的 CHR ROM。
 
-Upon insertion into the console, PRG ROM gets connected to CPU, and CHR ROM gets connected to PPU. So on a hardware level, CPU wasn't able to access CHR ROM directly, and PPU wasn't able to access PRG ROM.
+插入控制台后，PRG ROM 连接到 CPU，CHR ROM 连接到 PPU。
+所以在硬件层面，CPU 无法直接访问 CHR ROM，PPU 也无法访问 PRG ROM。
 
-> Later versions of cartridges had additional hardware:
+> 更高版本的卡带具有额外的硬件：
 >
-> * mappers to provide access to extended ROM memory: both CHR ROM and PRG ROM
-> * extra RAM (with a battery) to save and restore a game state
+> * Mapper 提供对扩展 ROM 存储器的访问：CHR ROM 和 PRG ROM
+> * 额外带电池的 RAM 来保存和恢复游戏状态
 
-However, we won't be working with cartridges. Emulators work with files containing dumps of ROM spaces.
+但是，我们不会模拟卡带。因为模拟器使用游戏 ROM 的转储 dump 文件。
 
-There are several file formats for ROM dumps; the most popular one is iNES designed by [Marat Fayzullin](http://fms.komkon.org)
+ROM 转储有多种文件格式；最受欢迎的是由 [Marat Fayzullin](http://fms.komkon.org) 设计的 iNES 格式
 
 ![image_2_ines_file_format.png](image_2_ines_file_format.png)
 
-The file contains 3-4 sections:
+该文件格式包含 3-4 个部分：
 
-* 16-byte header
-* optional 512 bytes of the so-called Trainer, a data section created by Famicom copiers to keep their own mapping. We can skip this section if it is present.
-* Section containing PRG ROM code
-* Section containing CHR ROM data
+* 16-byte 文件头部描述信息
+* 可选 512 字节的 Trainer
+* 包含 PRG ROM 代码的部分
+* 包含 CHR ROM 数据的部分
 
-The header is the most interesting part.
+其中 Header 是最有趣的部分。
 
 ![image_3_ines_header.png](image_3_ines_header.png)
 
-Control Byte 1 and Control Byte 2 (Byte 06 and 07 in the header) contain some additional info about the data in file, but it's packed in bits.
+控制字节 1 和控制字节 2（Header 中的字节 06 和 07）包含有关文件中数据的一些附加信息，但它是按位打包的。
 
 |   |   |
 |---|---|
 | ![image_4_control_byte_1.png](image_4_control_byte_1.png) | ![image_5_control_byte_2.png](image_5_control_byte_2.png) |
 
+我们不会涵盖和支持 iNES 2.0 格式，因为它不是很流行。但是您可以找到[两个 iNES 版本的正式规范](https://formats.kaitai.io/ines/index.html)。
 
-We won't cover and support the iNES 2.0 format as it's not very popular. But you can find [the formal specification of both iNES versions](https://formats.kaitai.io/ines/index.html).
-
-The bare minimum information we care about:
+我们关心的最基本信息：
 
 * PRG ROM
 * CHR ROM
-* Mapper type
-* Mirroring type: Horizontal, Vertical, 4 Screen
+* Mapper 类型
+* 镜像类型: Horizontal, Vertical, 4 Screen
 
-Mirroring will be extensively covered in the following PPU chapters.
-For now, we need to figure out which mirroring type the game is using.
+镜像将在后面的 PPU 章节中详细介绍。现在，我们只需要弄清楚游戏使用的是哪种镜像类型。
 
-We would support only the iNES 1.0 format and mapper 0.
+我们将仅支持 iNES 1.0 文件格式和 Mapper 0.
 
-Mapper 0 essentially means "no mapper" that CPU reads both CHR and PRG ROM as is.
+映射器 0 本质上意味着 CPU 按原样读取 CHR 和 PRG ROM，即无需映射。
 
-Let's define cartridge Rom data structure:
+接下来让我们来定义卡带的数据模型：
 
 ```rust
 #[derive(Debug, PartialEq)]
@@ -74,7 +73,7 @@ pub struct Rom {
 
 ```
 
-Then we need to write the code to parse binary data:
+然后我们需要编写解析二进制文件的代码：
 
 ```rust
 impl Rom {
@@ -117,9 +116,9 @@ impl Rom {
 
 ```
 
-As always, don't forget to test!
+一如既往，别忘了测试！
 
-Next, connect Rom to the BUS:
+然后继续，将 ROM 和 Bus 连接到一起：
 
 ```rust
 pub struct Bus {
@@ -138,10 +137,11 @@ impl Bus {
 }
 ```
 
-And finally, we need to map address space **[0x8000 … 0x10000]** to cartridge PRG ROM space.
+最后，我们需要映射地址空间 **[0x8000 … 0x10000]** 到 PRG ROM。
 
-One caveat: PRG Rom Size might be 16 KiB or 32 KiB.
-Because **[0x8000 … 0x10000]** mapped region is 32 KiB of addressable space, the upper 16 KiB needs to be mapped to the lower 16 KiB (if a game has only 16 KiB of PRG ROM)
+一个需要注意的地方时：PRG DOM 大小可能是 16 KiB 或 32 KiB。
+因为 **[0x8000 … 0x10000]** 映射区域是 32 KiB 的可寻址空间，
+所以需要将高 16 KiB 映射到低 16 KiB（如果游戏只有 16 KiB 的 PRG ROM）
 
 ```rust
 impl Mem for Bus {
@@ -176,12 +176,12 @@ impl Bus {
 }
 ```
 
-You can download your first NES ROM dump file on [Github](https://github.com/bugzmanov/nes_ebook/blob/master/code/ch5/snake.nes?raw=true).
+你可以在 [Github](https://github.com/bugzmanov/nes_ebook/blob/master/code/ch5/snake.nes?raw=true) 上下载你的第一个 NES ROM 文件。
 
-You will need to modify the `main` method to load binary from a file.
+你需要修改`main`方法以从文件加载二进制代码。
 
-Spoiler alert: it's a modification of a snake game with funkier physics. The game expects the same memory map for the input device, screen output, and random number generator.
+剧透警报：这是修改版的贪吃蛇游戏，具有更有趣的物理特性。游戏要求输入设备、屏幕输出和随机数生成器使用相同的内存映射。
 
 ------
 
-> The full source code for this chapter: [GitHub](https://github.com/bugzmanov/nes_ebook/tree/master/code/ch5)
+> 本章代码: [GitHub](https://github.com/bugzmanov/nes_ebook/tree/master/code/ch5)
