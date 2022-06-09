@@ -4,27 +4,28 @@ type: docs
 weight: 6
 ---
 
-Picture Processing Unit is the hardest one to emulate because it deals with the most complicated aspect of gaming: rendering the state of the screen. The NES PPU has fair number of quirks. While emulating some of them is not necessarily required, others are crucially important to have a playable environment.
-64KiB is not a hell of a lot of space, and NES platform designers tried to squeeze as much out of it as possible. Working with CHR ROM data means pretty much working with compressed data format; it requires a lot of bit arithmetic, uncompressing, and parsing.
+PPU 是最难模拟的，因为它负责游戏中最复杂的逻辑处理：渲染屏幕的状态。
+NES PPU 有很多怪癖，虽然其中一部分是没有必要模拟的，但是也有必须要模拟的。
+64KiB 的空间并不大，NES 平台设计者试图尽可能多地优化空间利用。
+使用 CHR ROM 数据几乎意味着使用压缩数据格式；它需要大量的位算术、解压缩和解析。
 
 ![image_1_ppu_failures.png](image_1_ppu_failures.png)
 
-We will create the PPU emulator using four main steps:
+我们将使用四个主要步骤创建 PPU 模拟器：
 
-* Emulating Registers and NMI Interruption
-* Parsing and drawing tiles from CHR ROM
-* Rendering PPU state:
-  * Rendering background tiles
-  * Rendering sprites
-* Implementing the scroll
+1. 模拟寄存器和 NMI 中断
+2. 从 CHR ROM 解析和绘制图块
+3. 渲染 PP U状态：
+   1. 渲染背景图块
+   2. 渲染精灵（Sprites）
+4. 实现滚动
 
-The first step is very similar to emulating the CPU.
-After the third one it will be possible to play games with static screens:
+第一步与模拟 CPU 非常相似。在第三个步骤之后，就可以玩静态屏幕游戏了，比如：
 
 * [Pac-Man](https://en.wikipedia.org/wiki/Pac-Man)
 * [Donkey Kong](https://en.wikipedia.org/wiki/Donkey_Kong)
 * [Balloon Fight](https://en.wikipedia.org/wiki/Balloon_Fight)
 
-When we are done with the scroll, we could play platformers such as [Super Mario Bros](https://en.wikipedia.org/wiki/Super_Mario_Bros).
+完成滚动实现后，我们可以玩超[级马里奥兄弟](https://en.wikipedia.org/wiki/Super_Mario_Bros)等平台游戏了。
 
-So let's start.
+开始吧！
